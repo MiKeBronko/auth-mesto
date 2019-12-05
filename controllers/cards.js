@@ -17,8 +17,14 @@ module.exports.createCard = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
+      const { owner } = req.body;
       if (!card) {
         return res.status(404).send({ message: 'нет такой карточки' });
+      }
+      console.log(req.user._id);
+      console.log(req.user.owner._id);
+      if (req.user._id === owner._id) {
+        return req.status(406).send({ messae: 'Нет прав' });
       }
       return res.send({ data: card });
     })

@@ -22,18 +22,28 @@ module.exports.findUser = (req, res) => {
     .catch((err) => res.status(500).send({ message: err.mesage }));
 };
 
+const handlecreateError = (res) => {
+  res
+    .status(401)
+    .send({ message: 'Не все поля заполнены' });
+};
 
+// eslint-disable-next-line consistent-return
 module.exports.createUser = (req, res) => {
-  const {
-    name, about, avatar,
-  } = req.body;
+  const { name, about, avatar } = req.body;
+  if (!name || !about || !avatar || !req.body.email || !req.body.password) {
+    return handlecreateError(res);
+  }
+
+
+  const { email } = req.body;
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
       name, about, avatar, email: req.body.email, password: hash,
     }))
-    .then((user) => {
-      res.status(201).send({ data: user });
-    })
+    .then((user) => res.status(201).send({
+      _id: user._id, name, about, avatar, email,
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(404).send({ message: err.message });
