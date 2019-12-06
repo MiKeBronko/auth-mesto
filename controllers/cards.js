@@ -7,6 +7,21 @@ module.exports.getCard = (req, res) => {
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
+// module.exports.getCard = (req, res) => {
+//   console.log(req.user._id);
+//   Card.findById(req.params.cardId)
+//     .populate('owner')
+//     .then((card) => {
+//       console.log(card.owner._id);
+//       if (!card) {
+//         return res.status(404).send({ message: 'нет такой карточки' });
+//       }
+//       return res.send({ data: card.owner });
+//     })
+//     .catch((err) => res.status(500).send({ message: err.message }));
+// };
+
+
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
@@ -15,21 +30,34 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  console.log(`userId: ${req.user._id}`);
+  Card.findById(req.params.cardId)
+    .populate('owner')
     .then((card) => {
-      const { owner } = req.body;
+      console.log(`ownerId: ${card.owner._id}`);
       if (!card) {
         return res.status(404).send({ message: 'нет такой карточки' });
       }
-      console.log(req.user._id);
-      console.log(req.user.owner._id);
-      if (req.user._id === owner._id) {
+      if (req.user._id !== card.owner._id) {
         return req.status(406).send({ messae: 'Нет прав' });
       }
-      return res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
-};
+    .catch((err) => res.status(500).send({ message: err.message }));
+  /**----------------------------*/
+
+//   Card.findByIdAndRemove(req.params.cardId)
+//     .then((card) => {
+//       console.log(`ownerId: ${card.owner._id}`);
+//       if (!card) {
+//         return res.status(404).send({ message: 'нет такой карточки' });
+//       }
+//       if (card && req.user._id !== card.owner._id) {
+//         return req.status(406).send({ messae: 'Нет прав' });
+//       }
+//       return res.send({ data: card });
+//     })
+//     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+// };
 
 
 module.exports.likeCard = (req, res) => {
