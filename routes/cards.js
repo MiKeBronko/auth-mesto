@@ -5,7 +5,6 @@ const {
 } = require('../controllers/cards');
 
 cards.get('/cards', getCard);
-cards.get('/cards/:cardId', getCard);
 cards.post('/cards', createCard);
 cards.delete('/cards/:cardId', deleteCard);
 cards.put('/cards/:cardId/likes', likeCard);

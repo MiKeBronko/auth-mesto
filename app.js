@@ -30,7 +30,7 @@ const limiter = rateLimit({
   max: 20,
 });
 
-// app.use(limiter);
+app.use(limiter);
 app.use(helmet());
 
 
