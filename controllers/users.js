@@ -2,8 +2,11 @@ const bcrypt = require('bcryptjs');
 
 const jwt = require('jsonwebtoken');
 
-const User = require('../models/user');
+require('dotenv').config();
 
+const { NODE_ENV, JWT_SECRET } = process.env;
+
+const User = require('../models/user');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -15,7 +18,7 @@ module.exports.findUser = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Нет таких!' });
+        return res.status(404).send({ message: 'Пользователь не найден' });
       }
       return res.send({ data: user });
     })
@@ -34,7 +37,6 @@ module.exports.createUser = (req, res) => {
   if (!name || !about || !avatar || !req.body.email || !req.body.password) {
     return handlecreateError(res);
   }
-
 
   const { email } = req.body;
   bcrypt.hash(req.body.password, 10)
@@ -58,7 +60,7 @@ module.exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true })
     .then((user) => {
       if (!user) {
-        return res.staus(404).send({ message: 'нет таких' });
+        return res.staus(404).send({ message: 'Пользователь не найден' });
       }
       return res.send(user);
     })
@@ -70,7 +72,7 @@ module.exports.updateAva = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
     .then((user) => {
       if (!user) {
-        return res.status(404).json({ message: 'нет таких' });
+        return res.status(404).json({ message: 'Пользователь не найден' });
       }
       return res.send(user);
     })
@@ -88,13 +90,13 @@ module.exports.login = (req, res) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
-        token: jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' }),
+        token: jwt.sign({ _id: user._id }, NODE_ENV === 'dev' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' }),
       });
     })
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
-      res.status(401).send({ message: `контроллёр users.js: ${err.message}` });
+      res.status(401).send({ message: err.message });
     });
 };
