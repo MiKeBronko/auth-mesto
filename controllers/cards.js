@@ -20,11 +20,14 @@ module.exports.deleteCard = (req, res) => {
   Card.findById(req.params.cardId)
     .populate('owner')
     .then((card) => {
+      if (!card) {
+        return res.status(404).send({ message: 'Карточка с таким Id не найдена' });
+      }
       if (JSON.stringify(req.user._id) === JSON.stringify(card.owner._id)) {
         return Card.findByIdAndRemove(req.params.cardId)
           .then((dataCard) => res.send({ data: dataCard }));
       }
-      return res.status(401).send({ message: 'Вы не можете удалить чужую карточку' });
+      return res.status(403).send({ message: 'Вы не можете удалить чужую карточку' });
     })
     .catch((err) => res.status(500).send({ message: err.message }));
 };
